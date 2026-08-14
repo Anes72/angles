@@ -34,6 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController controller = TextEditingController();
   List<int> guesses = [];
   bool correct = false;
+  bool loss = false;
 
   @override
   void initState() {
@@ -46,6 +47,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
   int generateRandomAngle() {
     return Random().nextInt(301) + 30;
+  }
+
+  void init() {
+    if (correct || loss) {
+      correct = false;
+      loss = false;
+      attempts = 0;
+      guesses = [];
+      theAngle = generateRandomAngle();
+      biais = generateRandomAngle();
+      print("Angle : $theAngle");
+      print("Biais : $biais");
+      setState(() {});
+    }
   }
 
   Future<void> guess() async {
@@ -67,7 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       attempts++;
       if (attempts == 4) {
-        bool loss = true;
+        loss = true;
         for (var i = 0; i < guesses.length; i++) {
           if (guesses[i] == theAngle) {
             loss = false;
@@ -141,9 +156,36 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      InkWell(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        onTap: () {
+                          showHowToPlayDialog(context);
+                        },
+                        child: Image.asset('assets/question.png', height: 20),
+                      ),
+                      SizedBox(width: 10),
+                      InkWell(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        onTap: () {
+                          showStatisticsDialog(context);
+                        },
+                        child: Image.asset('assets/graph.png', height: 20),
+                      ),
+                    ],
+                  ),
                   SizedBox(
                     height: 300,
-                    child: angle(
+                    child: Angle(
                       theAngle: theAngle.toDouble(),
                       biais: biais.toDouble(),
                     ),
@@ -171,9 +213,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
                       MyButton(
                         text: "Guess!",
-                        height: 40,
+                        height: 45,
                         width: 70,
                         fct: guess,
+                        end: (correct || loss) ? true : false,
                       ),
                     ],
                   ),
@@ -217,16 +260,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     realAngle: theAngle,
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 30),
 
                   MyButton(
                     text: "Next",
                     height: 40,
                     width: 200,
-                    fct: () {
-                      showStatisticsDialog(context);
-                    },
+                    fct: init,
+                    end: (correct || loss) ? true : false,
                   ),
+                  SizedBox(height: 50),
                 ],
               ),
             ),
@@ -235,46 +278,249 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
+  Future<void> showHowToPlayDialog(BuildContext context) async {
+    await showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.70),
+      builder: (_) => const HowToPlayDialog(),
+    );
+  }
 }
 
-class angle extends StatefulWidget {
-  const angle({super.key, required this.theAngle, required this.biais});
+class HowToPlayDialog extends StatelessWidget {
+  const HowToPlayDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+      child: Container(
+        width: double.infinity,
+        height: MediaQuery.of(context).size.height * 0.72,
+        padding: const EdgeInsets.fromLTRB(36, 22, 36, 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF202020).withOpacity(0.96),
+          border: Border.all(color: Colors.white.withOpacity(0.20), width: 2),
+        ),
+        child: Column(
+          children: [
+            // ─────────────────────────────
+            // TITLE
+            // ─────────────────────────────
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'How to play!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                ),
+
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.white.withOpacity(0.55),
+                    size: 32,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            // ─────────────────────────────
+            // SCROLLABLE CONTENT
+            // ─────────────────────────────
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Guess the Angle in 4\nguesses or less!',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                        height: 1.45,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    const Text(
+                      'Each time you make a guess it will tell you '
+                      'how close you are and which direction to go.',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                        height: 1.45,
+                      ),
+                    ),
+
+                    const SizedBox(height: 38),
+
+                    const Text(
+                      'Example:',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ─────────────────────
+                    // ANGLE EXAMPLE
+                    // ─────────────────────
+                    Center(
+                      child: SizedBox(
+                        height: 180,
+                        width: 250,
+                        child: Angle(theAngle: 65, biais: 0),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ─────────────────────
+                    // EXAMPLE GUESSES
+                    // ─────────────────────
+                    _ExampleRow(
+                      guess: 50,
+                      direction: '⬆️',
+                      hint: 'Getting\nHot',
+                    ),
+
+                    const SizedBox(height: 3),
+
+                    _ExampleRow(guess: 73, direction: '⬇️', hint: 'Hot!'),
+
+                    const SizedBox(height: 3),
+
+                    _ExampleRow(
+                      guess: 62,
+                      direction: '⬆️',
+                      hint: 'Boiling! 🔥',
+                    ),
+
+                    const SizedBox(height: 35),
+
+                    const Text(
+                      'The hint tells you how warm your guess was '
+                      'and the arrow tells you to guess higher or lower.',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                        height: 1.45,
+                      ),
+                    ),
+
+                    const SizedBox(height: 25),
+
+                    const Text(
+                      'The answer in this case was:',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                        height: 1.45,
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    // ─────────────────────
+                    // ANSWER
+                    // ─────────────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        box(width: 80, text: '65°', guessed: true),
+
+                        const SizedBox(width: 3),
+
+                        box(width: 50, text: '🥳', guessed: true),
+
+                        const SizedBox(width: 3),
+
+                        box(width: 100, text: '🎉🎉🎉', guessed: true),
+                      ],
+                    ),
+
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ExampleRow extends StatelessWidget {
+  const _ExampleRow({
+    required this.guess,
+    required this.direction,
+    required this.hint,
+  });
+
+  final int guess;
+  final String direction;
+  final String hint;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        box(width: 80, text: '$guess°', guessed: true),
+
+        const SizedBox(width: 3),
+
+        box(width: 50, text: direction, guessed: true),
+
+        const SizedBox(width: 3),
+
+        box(width: 100, text: hint, guessed: true),
+      ],
+    );
+  }
+}
+
+class Angle extends StatelessWidget {
+  const Angle({super.key, required this.theAngle, required this.biais});
 
   final double theAngle;
   final double biais;
 
-  @override
-  State<angle> createState() => _angleState();
-}
-
-class _angleState extends State<angle> {
-  late double angle;
-
-  late double rotAngle1;
-  late double rotAngle2;
-
   // dimensions
+  final double lineLength = 105;
+  final double lineThickness = 3;
 
-  double center = 250;
+  final double arcRadius = 20;
+  final double arcThickness = 3;
 
-  double lineLength = 105;
-  double lineThickness = 3;
-
-  double arcRadius = 20;
-  double arcThickness = 3;
-
-  double pivotSize = 8;
-
-  @override
-  void initState() {
-    super.initState();
-    angle = widget.theAngle;
-    rotAngle1 = widget.biais * pi / 180;
-    rotAngle2 = (180 + angle) * pi / 180 + rotAngle1;
-  }
+  final double pivotSize = 8;
 
   @override
   Widget build(BuildContext context) {
+    final rotAngle1 = biais * pi / 180;
+    final rotAngle2 = (180 + theAngle) * pi / 180 + rotAngle1;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = min(constraints.maxWidth, constraints.maxHeight);
@@ -290,41 +536,42 @@ class _angleState extends State<angle> {
                 Positioned(
                   left: center - arcRadius,
                   top: center - arcRadius,
-
                   child: CustomPaint(
                     size: Size(arcRadius * 2, arcRadius * 2),
-
                     painter: AnglePainter(
                       startAngle: pi + rotAngle1,
-                      sweepAngle: angle * pi / 180,
+                      sweepAngle: theAngle * pi / 180,
                       radius: arcRadius,
                       thickness: arcThickness,
                     ),
                   ),
                 ),
+
                 Positioned(
                   left: center - lineLength,
                   top: center - lineThickness / 2,
-
                   child: Transform.rotate(
                     angle: rotAngle1,
                     alignment: Alignment.centerRight,
-
                     child: Container(
                       width: lineLength,
                       height: lineThickness,
-                      color: Colors.red,
+                      color: const Color.from(
+                        alpha: 1,
+                        red: 0.957,
+                        green: 0.263,
+                        blue: 0.212,
+                      ),
                     ),
                   ),
                 ),
+
                 Positioned(
                   left: center,
                   top: center - lineThickness / 2,
-
                   child: Transform.rotate(
                     angle: rotAngle2,
                     alignment: Alignment.centerLeft,
-
                     child: Container(
                       width: lineLength,
                       height: lineThickness,
@@ -332,14 +579,13 @@ class _angleState extends State<angle> {
                     ),
                   ),
                 ),
+
                 Positioned(
                   left: center - pivotSize / 2,
                   top: center - pivotSize / 2,
-
                   child: Container(
                     width: pivotSize,
                     height: pivotSize,
-
                     decoration: const BoxDecoration(
                       color: Color.fromARGB(255, 224, 224, 224),
                       shape: BoxShape.circle,
@@ -446,12 +692,14 @@ class MyButton extends StatelessWidget {
     required this.height,
     required this.width,
     required this.fct,
+    required this.end,
   });
 
   final String text;
   final double height;
   final double width;
   final Function fct;
+  final bool end;
 
   @override
   Widget build(BuildContext context) {
@@ -466,7 +714,9 @@ class MyButton extends StatelessWidget {
           width: width,
           height: height,
           decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 101, 101, 101),
+            color: (text == "Next" && end)
+                ? Colors.red
+                : Color.fromARGB(255, 101, 101, 101),
             borderRadius: BorderRadius.circular(10),
           ),
           alignment: Alignment.center,
