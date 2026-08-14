@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.minesweeper"
+    namespace = "com.example.Angles"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.3.13750724"
 
