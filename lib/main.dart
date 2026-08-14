@@ -128,26 +128,38 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             Container(
               width: double.infinity,
-              height: 60,
+              height: 100,
               decoration: const BoxDecoration(
                 color: Color.fromARGB(255, 46, 46, 46),
               ),
-              child: Center(
-                child: (correct)
-                    ? Text(
-                        "🎉 ${theAngle}° 🎉",
-                        style: const TextStyle(
-                          color: Color.fromARGB(255, 194, 194, 194),
-                          fontSize: 17,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  (correct)
+                      ? Text(
+                          "🎉 ${theAngle}° 🎉",
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 194, 194, 194),
+                            fontSize: 17,
+                          ),
+                        )
+                      : (loss)
+                      ? Text(
+                          "${theAngle}°",
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 194, 194, 194),
+                            fontSize: 17,
+                          ),
+                        )
+                      : Text(
+                          "???",
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 194, 194, 194),
+                            fontSize: 17,
+                          ),
                         ),
-                      )
-                    : Text(
-                        "???",
-                        style: const TextStyle(
-                          color: Color.fromARGB(255, 194, 194, 194),
-                          fontSize: 17,
-                        ),
-                      ),
+                  SizedBox(height: 20),
+                ],
               ),
             ),
 
@@ -979,7 +991,7 @@ class _Statistic extends StatelessWidget {
               value,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 21,
+                fontSize: 19,
                 fontWeight: FontWeight.w300,
               ),
             ),
@@ -989,7 +1001,7 @@ class _Statistic extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 15,
+                fontSize: 13,
                 fontWeight: FontWeight.w300,
                 height: 1.35,
               ),
