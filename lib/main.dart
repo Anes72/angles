@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
+import 'package:intl/intl.dart';
 
+final formatter = NumberFormat('#,###', 'en_US');
 void main() {
   runApp(const MyApp());
 }
@@ -66,7 +68,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> guess() async {
     final int? value = int.tryParse(controller.text);
 
-    if (value == null || controller.text.contains('-')) {
+    if (value == null ||
+        controller.text.contains('-') ||
+        value > 360 ||
+        value < 0) {
       showInvalidInput();
       controller.clear();
       return;
@@ -101,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text(
-          "Please enter a positive integer.",
+          "Please enter a positive integer between 0 and 360",
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white, fontSize: 14),
         ),
@@ -931,10 +936,10 @@ class StatisticsDialog extends StatelessWidget {
             // ─────────────────────────────
             Row(
               children: [
-                _Statistic(value: '$winPercentage', label: 'Win\n%'),
-                _Statistic(value: '$played', label: 'Played\n'),
-                _Statistic(value: '$currentStreak', label: 'Current\nStreak'),
-                _Statistic(value: '$maxStreak', label: 'Max\nStreak'),
+                _Statistic(value: winPercentage, label: 'Win\n%'),
+                _Statistic(value: played, label: 'Played\n'),
+                _Statistic(value: currentStreak, label: 'Current\nStreak'),
+                _Statistic(value: maxStreak, label: 'Max\nStreak'),
               ],
             ),
 
@@ -977,7 +982,7 @@ class StatisticsDialog extends StatelessWidget {
 class _Statistic extends StatelessWidget {
   const _Statistic({required this.value, required this.label});
 
-  final String value;
+  final int value;
   final String label;
 
   @override
@@ -988,7 +993,7 @@ class _Statistic extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              value,
+              formatNumber(value),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 19,
@@ -1010,6 +1015,18 @@ class _Statistic extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String formatNumber(int number) {
+    if (number >= 1000000) {
+      return '${(number / 1000000).toStringAsFixed(number % 1000000 == 0 ? 0 : 1)}M';
+    }
+
+    if (number >= 1000) {
+      return '${(number / 1000).toStringAsFixed(number % 1000 == 0 ? 0 : 1)}k';
+    }
+
+    return number.toString();
   }
 }
 
